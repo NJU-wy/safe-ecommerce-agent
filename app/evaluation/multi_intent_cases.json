@@ -1,0 +1,66 @@
+{
+  "cases": [
+    {
+      "id": "multi_logistics_complaint",
+      "description": "物流查询并投诉配送过慢",
+      "turns": ["订单 ORD-20240115-001 到哪了，物流太慢了我要投诉"],
+      "expected_intent": "complaint",
+      "expected_intents": ["complaint", "order_query"],
+      "expected_tools": ["query_order"],
+      "min_tool_calls": 1,
+      "max_tokens": 5000
+    },
+    {
+      "id": "multi_refund_order",
+      "description": "查询订单并提出退款",
+      "turns": ["查一下 ORD-20240122-005，我买错了想退款"],
+      "expected_intent": "return_request",
+      "expected_intents": ["return_request", "order_query"],
+      "expected_tools": ["query_order"],
+      "forbidden_tools": ["apply_refund"],
+      "min_tool_calls": 1,
+      "max_tokens": 5000
+    },
+    {
+      "id": "multi_product_promotion",
+      "description": "咨询商品同时询问优惠",
+      "turns": ["AirPods Pro 2 续航怎么样，现在有优惠券或满减活动吗？"],
+      "expected_intent": "promotion",
+      "expected_intents": ["promotion", "product_consult"],
+      "expected_tools": ["query_product"],
+      "min_tool_calls": 1,
+      "max_tokens": 5000
+    },
+    {
+      "id": "multi_account_complaint",
+      "description": "账号被盗并投诉安全问题",
+      "turns": ["我的账号被盗了，你们安全太差，我要投诉并转人工"],
+      "expected_intent": "complaint",
+      "expected_intents": ["complaint", "account"],
+      "expected_requires_human": true,
+      "forbidden_tools": ["apply_refund"],
+      "min_tool_calls": 0,
+      "max_tokens": 3000
+    },
+    {
+      "id": "multi_aftersale_order",
+      "description": "指定订单咨询保修",
+      "turns": ["订单 ORD-20240115-001 里的商品怎么申请保修售后？"],
+      "expected_intent": "after_sale",
+      "expected_intents": ["after_sale", "order_query"],
+      "expected_tools": ["query_order"],
+      "min_tool_calls": 1,
+      "max_tokens": 5000
+    },
+    {
+      "id": "multi_greeting_product",
+      "description": "问候后咨询商品",
+      "turns": ["你好，能推荐一款续航好的耳机吗？"],
+      "expected_intent": "product_consult",
+      "expected_intents": ["product_consult", "greeting"],
+      "expected_tools": ["query_product"],
+      "min_tool_calls": 1,
+      "max_tokens": 5000
+    }
+  ]
+}
