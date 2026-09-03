@@ -11,10 +11,11 @@ from app.prompts.agents import COMPLAINT_PROMPT, POSTSALE_PROMPT, PRESALE_PROMPT
 from app.agent.tools.manager import ToolManager
 from app.config.model_options import completion_kwargs
 from app.agent.refund_safety import (
-    has_explicit_refund_confirmation,
+    latest_user_text,
     refund_confirmation_required_result,
     secure_refund_arguments,
 )
+from app.agent.refund_workflow import RefundWorkflow
 from app.config.settings import settings
 from app.agent.response_policy import recent_user_context
 from app.agent.tool_policy import select_tool_definitions
@@ -64,6 +65,7 @@ class SubAgent:
 
     def handle(
         self, messages: list[dict], max_steps: int = 5,
+        refund_workflow: RefundWorkflow | None = None,
     ) -> tuple[str, list[dict]]:
         """执行 ReAct 循环，返回 (最终文本, 新增消息列表)。"""
         new_messages: list[dict] = []
@@ -114,7 +116,14 @@ class SubAgent:
                 if func_name == "apply_refund":
                     # 子 Agent 不可信：没有最新用户明确确认，就只返回安全观察，
                     # 不调用 ToolManager，因此不会产生退款副作用。
-                    if not has_explicit_refund_confirmation(working):
+                    func_args = secure_refund_arguments(
+                        func_args, working, settings.memory_user_id
+                    )
+                    if not refund_workflow or not refund_workflow.authorize(
+                        str(func_args.get("order_id") or ""), latest_user_text(working),
+                        str(func_args.get("idempotency_key") or ""),
+                        str(func_args.get("reason") or ""),
+                    ):
                         result_str = refund_confirmation_required_result()
                         self._print_observation(result_str)
                         tool_msg = {
@@ -125,12 +134,14 @@ class SubAgent:
                         new_messages.append(tool_msg)
                         working.append(tool_msg)
                         continue
-                    func_args = secure_refund_arguments(
-                        func_args, working, settings.memory_user_id
-                    )
 
                 self._print_action(func_name, func_args)
                 result_str = self.tool_manager.execute_tool(func_name, func_args)
+                if func_name == "apply_refund" and refund_workflow:
+                    try:
+                        refund_workflow.record_result(json.loads(result_str))
+                    except json.JSONDecodeError:
+                        refund_workflow.audit("invalid_tool_result")
                 self._print_observation(result_str)
                 context_result = compact_tool_result(func_name, result_str)
 

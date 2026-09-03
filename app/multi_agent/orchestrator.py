@@ -18,6 +18,7 @@ from app.agent.tools.manager import ToolManager
 from app.config.model_options import completion_kwargs
 from app.agent.response_policy import build_customer_response, recent_user_context
 from app.agent.tool_policy import should_include_skill_catalog
+from app.agent.refund_workflow import RefundWorkflow
 
 
 class MultiAgentOrchestrator:
@@ -78,6 +79,9 @@ class MultiAgentOrchestrator:
 
         self.raw_messages: list[dict] = []
         self.summary: Optional[str] = None
+        self.refund_workflow = RefundWorkflow(
+            settings.memory_user_id, settings.refund_audit_path
+        )
 
         loaded = load_session(self.session_path)
         if loaded:
@@ -85,6 +89,11 @@ class MultiAgentOrchestrator:
             self.raw_messages = loaded["messages"]
             if loaded.get("short_term_memory"):
                 self.memory_manager.restore_stm(loaded["short_term_memory"])
+            if loaded.get("refund_workflow"):
+                self.refund_workflow = RefundWorkflow.from_dict(
+                    loaded["refund_workflow"], settings.memory_user_id,
+                    settings.refund_audit_path,
+                )
 
     @property
     def history_size(self) -> int:
@@ -92,6 +101,7 @@ class MultiAgentOrchestrator:
 
     def chat(self, user_input: str) -> CustomerServiceResponse:
         """主责路由 → 子 Agent 生成正文 → 确定性主/次意图元数据 → 返回结果。"""
+        self.refund_workflow.observe_user(user_input)
         self.raw_messages.append({"role": "user", "content": user_input})
 
         agent_key = self.router.route(user_input, self.raw_messages)
@@ -101,6 +111,7 @@ class MultiAgentOrchestrator:
         messages = self._build_messages(agent)
         final_text, new_messages = agent.handle(
             messages, max_steps=self.max_react_steps,
+            refund_workflow=self.refund_workflow,
         )
         self.raw_messages.extend(new_messages)
 
@@ -118,6 +129,7 @@ class MultiAgentOrchestrator:
         save_session(
             self.session_path, self.raw_messages, self.summary,
             short_term_memory=self.memory_manager.stm_to_dict(),
+            refund_workflow=self.refund_workflow.to_dict(),
         )
         return result
 
@@ -125,12 +137,16 @@ class MultiAgentOrchestrator:
         self.raw_messages = []
         self.summary = None
         self.memory_manager.reset_short_term()
+        self.refund_workflow = RefundWorkflow(
+            settings.memory_user_id, settings.refund_audit_path
+        )
         delete_session(self.session_path)
 
     def save(self) -> None:
         save_session(
             self.session_path, self.raw_messages, self.summary,
             short_term_memory=self.memory_manager.stm_to_dict(),
+            refund_workflow=self.refund_workflow.to_dict(),
         )
 
     def close(self):

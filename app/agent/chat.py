@@ -11,10 +11,11 @@ from app.prompts.customer_service import SYSTEM_PROMPT
 from app.schemas.response import CustomerServiceResponse, IntentType
 from app.agent.tools.manager import ToolManager
 from app.agent.refund_safety import (
-    has_explicit_refund_confirmation,
+    latest_user_text,
     refund_confirmation_required_result,
     secure_refund_arguments,
 )
+from app.agent.refund_workflow import RefundWorkflow
 from app.agent.response_policy import build_customer_response, recent_user_context
 from app.agent.tool_policy import select_tool_definitions, should_include_skill_catalog
 from app.agent.tool_result_compactor import compact_tool_result
@@ -65,6 +66,9 @@ class EcomAgent:
 
         self.raw_messages: list[dict] = []
         self.summary: Optional[str] = None
+        self.refund_workflow = RefundWorkflow(
+            settings.memory_user_id, settings.refund_audit_path
+        )
 
         loaded = load_session(self.session_path)
         if loaded:
@@ -72,6 +76,11 @@ class EcomAgent:
             self.raw_messages = loaded["messages"]
             if loaded.get("short_term_memory"):
                 self.memory_manager.restore_stm(loaded["short_term_memory"])
+            if loaded.get("refund_workflow"):
+                self.refund_workflow = RefundWorkflow.from_dict(
+                    loaded["refund_workflow"], settings.memory_user_id,
+                    settings.refund_audit_path,
+                )
 
     @property
     def history_size(self) -> int:
@@ -79,6 +88,7 @@ class EcomAgent:
 
     def chat(self, user_input: str) -> CustomerServiceResponse:
         """处理用户输入：ReAct 生成正文 → 确定性主/次意图元数据 → 返回结果。"""
+        self.refund_workflow.observe_user(user_input)
         self.raw_messages.append({"role": "user", "content": user_input})
 
         final_text = self._react_loop()
@@ -97,6 +107,7 @@ class EcomAgent:
         save_session(
             self.session_path, self.raw_messages, self.summary,
             short_term_memory=self.memory_manager.stm_to_dict(),
+            refund_workflow=self.refund_workflow.to_dict(),
         )
         return result
 
@@ -104,12 +115,16 @@ class EcomAgent:
         self.raw_messages = []
         self.summary = None
         self.memory_manager.reset_short_term()
+        self.refund_workflow = RefundWorkflow(
+            settings.memory_user_id, settings.refund_audit_path
+        )
         delete_session(self.session_path)
 
     def save(self) -> None:
         save_session(
             self.session_path, self.raw_messages, self.summary,
             short_term_memory=self.memory_manager.stm_to_dict(),
+            refund_workflow=self.refund_workflow.to_dict(),
         )
 
     def close(self):
@@ -166,7 +181,15 @@ class EcomAgent:
                 if func_name == "apply_refund":
                     # 执行层安全边界：即使模型受提示词注入影响主动调用退款，
                     # 最新用户消息没有明确确认时也绝不进入真实工具。
-                    if not has_explicit_refund_confirmation(self.raw_messages):
+                    func_args = secure_refund_arguments(
+                        func_args, self.raw_messages, settings.memory_user_id
+                    )
+                    if not self.refund_workflow.authorize(
+                        str(func_args.get("order_id") or ""),
+                        latest_user_text(self.raw_messages),
+                        str(func_args.get("idempotency_key") or ""),
+                        str(func_args.get("reason") or ""),
+                    ):
                         result_str = refund_confirmation_required_result()
                         self._print_observation(result_str)
                         self.raw_messages.append({
@@ -175,12 +198,14 @@ class EcomAgent:
                             "content": result_str,
                         })
                         continue
-                    func_args = secure_refund_arguments(
-                        func_args, self.raw_messages, settings.memory_user_id
-                    )
 
                 self._print_action(func_name, func_args)
                 result_str = self.tool_manager.execute_tool(func_name, func_args)
+                if func_name == "apply_refund":
+                    try:
+                        self.refund_workflow.record_result(json.loads(result_str))
+                    except json.JSONDecodeError:
+                        self.refund_workflow.audit("invalid_tool_result")
                 self._print_observation(result_str)
                 context_result = compact_tool_result(func_name, result_str)
 

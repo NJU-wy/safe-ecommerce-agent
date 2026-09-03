@@ -49,6 +49,7 @@ class Settings(BaseSettings):
 
     # 敏感操作审计与幂等账本
     refund_ledger_path: str = "app/sessions/refund_ledger.json"
+    refund_audit_path: str = "app/sessions/refund_audit.jsonl"
 
     # 多轮对话管理
     session_path: str = "app/sessions/session.json"

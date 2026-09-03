@@ -4,7 +4,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-SESSION_VERSION = 1
+SESSION_VERSION = 2
 
 
 def save_session(
@@ -12,6 +12,7 @@ def save_session(
     messages: list[dict],
     summary: Optional[str],
     short_term_memory: Optional[dict] = None,
+    refund_workflow: Optional[dict] = None,
 ) -> None:
     """把对话状态原子写入 JSON 文件。
 
@@ -27,6 +28,7 @@ def save_session(
         "summary": summary,
         "messages": messages,
         "short_term_memory": short_term_memory,
+        "refund_workflow": refund_workflow,
     }
 
     tmp_path = file_path.with_suffix(file_path.suffix + ".tmp")
@@ -56,6 +58,7 @@ def load_session(path: str) -> Optional[dict]:
         "summary": data.get("summary"),
         "messages": data.get("messages", []),
         "short_term_memory": data.get("short_term_memory"),
+        "refund_workflow": data.get("refund_workflow"),
     }
 
 

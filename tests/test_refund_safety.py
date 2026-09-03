@@ -6,6 +6,7 @@ from app.agent.refund_safety import (
     secure_refund_arguments,
 )
 from app.agent.tools.refund import apply_refund
+from app.agent.refund_workflow import RefundState, RefundWorkflow
 from app.config.settings import settings
 
 
@@ -53,3 +54,44 @@ def test_refund_validates_order_state_and_key_conflict(tmp_path, monkeypatch):
     conflict = apply_refund("ORD-20240120-002", "重复请求", True, key)
     assert conflict["success"] is False
     assert conflict["idempotency_conflict"] is True
+
+
+def test_refund_workflow_binds_confirmation_to_pending_order(tmp_path):
+    workflow = RefundWorkflow("u1", str(tmp_path / "audit.jsonl"))
+    workflow.observe_user("订单 ORD-20240122-005 买错了，我想退款")
+    assert workflow.state is RefundState.AWAITING_CONFIRMATION
+    assert not workflow.authorize("ORD-20240122-005", "好吧")
+    workflow.observe_user("确认退款")
+    assert workflow.state is RefundState.CONFIRMED
+    assert workflow.authorize("ORD-20240122-005", "确认退款")
+    assert not workflow.authorize("ORD-20240120-002", "确认退款")
+
+
+def test_old_confirmation_cannot_authorize_new_order(tmp_path):
+    workflow = RefundWorkflow("u1", str(tmp_path / "audit.jsonl"))
+    workflow.observe_user("订单 ORD-20240122-005 申请退款")
+    workflow.observe_user("确认退款")
+    workflow.observe_user("改成订单 ORD-20240120-002 退款")
+    assert workflow.state is RefundState.AWAITING_CONFIRMATION
+    assert workflow.order_id == "ORD-20240120-002"
+    assert not workflow.authorize("ORD-20240120-002", "改成订单 ORD-20240120-002 退款")
+
+
+def test_order_can_be_bound_in_followup_before_confirmation(tmp_path):
+    workflow = RefundWorkflow("u1", str(tmp_path / "audit.jsonl"))
+    workflow.observe_user("我想退款")
+    workflow.observe_user("是订单 ORD-20240122-005")
+    workflow.observe_user("确认退款")
+    assert workflow.authorize("ORD-20240122-005", "确认退款")
+
+
+def test_workflow_audit_and_terminal_state(tmp_path):
+    audit = tmp_path / "audit.jsonl"
+    workflow = RefundWorkflow("u1", str(audit))
+    workflow.observe_user("订单 ORD-20240122-005 申请退款")
+    workflow.observe_user("确认退款")
+    workflow.record_result({"success": True, "refund_status": "submitted"})
+    assert workflow.state is RefundState.EXECUTED
+    records = [json.loads(line) for line in audit.read_text("utf-8").splitlines()]
+    states = [r["state"] for r in records if r["event"] == "state_transition"]
+    assert states == ["awaiting_confirmation", "confirmed", "executed"]

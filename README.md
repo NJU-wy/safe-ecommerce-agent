@@ -25,6 +25,7 @@ EcomGuard Agent 是一个基于 Python 和大语言模型构建的电商智能�
 - Memory 与 Skill：支持短期/长期记忆，以及复杂流程的按需 Skill 加载。
 - MCP 集成：本地工具可通过 MCP Server 暴露，连接失败时自动降级到本地实现。
 - 安全退款：明确确认、订单状态校验、原子持久化幂等账本及提示词注入防护。
+- 显式退款状态机：跨轮状态、订单绑定、授权拦截和 JSONL 审计轨迹。
 - 多意图输出：提供主意图和次要意图；Multi-Agent 仍按一个主责路由执行，避免重复调用。
 - 评估闭环：100 条单意图回归集、6 条复合意图集及失败集＋成功抽样 Judge。
 
@@ -117,6 +118,27 @@ sequenceDiagram
 多 Agent 路由准确率按意图到业务 Agent 的确定性映射复核为 97%。完整评估后又对三条安全失败逐项修复并定向回归：第三方订单查询被隐私策略拦截；两条退款提示词注入用例的敏感操作安全率达到 100%。完整原始报告保留修复前快照，避免通过手工改写报告美化结果。
 
 主要优化包括：确定性意图与转人工策略、动态最小工具集、数据请求首步强制查询、Skill 按需加载、工具结果压缩、去除重复结构化历史、回复 Token 上限，以及退款执行层的明确确认与幂等双重保护。
+
+### 退款状态机与跨轮安全
+
+退款流程显式建模为 `idle → awaiting_confirmation → confirmed → executed/rejected/cancelled`。状态随会话持久化，确认同时绑定用户、订单和最新真实用户消息；切换订单后旧确认自动失效。状态迁移、授权放行/拦截和执行结果写入 JSONL 审计轨迹。
+
+4 条跨轮对抗用例覆盖旧确认复用、换单后模糊确认、确认措辞与取消并存、JSON 伪确认，规则评估通过率与敏感操作安全率均为 100%。
+
+### RAG 检索评估
+
+知识库扩展为 8 份文档、31 个 Chunk；金标集扩展为 44 条 Query，其中包含 38 条有答案问题和 6 条无答案问题，覆盖直接提问、口语、省略、错别字、多条件和易混淆条款。当前本地哈希 Embedding＋NumPy 余弦检索结果：
+
+| 指标 | 结果 |
+|---|---:|
+| Recall@1 | 63.2% |
+| Recall@3 | 76.3% |
+| MRR | 68.9% |
+| 口语组 Recall@3 | 42.9% |
+| 无答案准确率（阈值 0.18） | 100% |
+| 有答案覆盖率（阈值 0.18） | 47.4% |
+
+扩展后暴露出真实短板：口语和错别字问题经常没有进入 Top-3，此时 Reranker 无法找回未召回文档。因此现阶段不直接增加重排，而应先对比中文语义 Embedding或查询改写。阈值 0.18 虽识别了全部无答案样本，却误拒绝超过一半可回答问题，暂不作为线上拒答策略。
 
 ### 多意图评估
 
@@ -230,10 +252,23 @@ python mcp_server/server.py
 运行不需要网络的核心回归测试：
 
 ```powershell
-pytest -q tests/test_multilabel_intent.py tests/test_refund_safety.py tests/test_optimization_policy.py tests/test_model_options.py tests/test_eval_dataset_quality.py
+pytest -q tests/test_multilabel_intent.py tests/test_refund_safety.py tests/test_optimization_policy.py tests/test_model_options.py tests/test_eval_dataset_quality.py tests/test_rag_metrics.py
 ```
 
-当前核心离线回归结果为 `18 passed`。仓库中还包含需要有效 API Key 的在线集成测试；直接执行全部 `pytest -q` 会访问模型服务，不应视为纯离线测试。
+当前核心离线回归结果为 `23 passed`。仓库中还包含需要有效 API Key 的在线集成测试；直接执行全部 `pytest -q` 会访问模型服务，不应视为纯离线测试。
+
+运行 RAG 检索金标评估：
+
+```powershell
+python -X utf8 app/scripts/build_kb_index.py --backend numpy
+python -X utf8 app/scripts/run_rag_eval.py
+```
+
+运行退款跨轮对抗评估：
+
+```powershell
+python -X utf8 app/scripts/run_eval.py --no-judge --mode single --dataset app/evaluation/refund_adversarial_cases.json --output app/sessions/eval_report_refund_state_machine.json
+```
 
 运行100条规则评估：
 
@@ -280,13 +315,15 @@ safe-ecommerce-agent/
 │   │   ├── tool_policy.py       # 动态最小工具集
 │   │   ├── tool_result_compactor.py # 工具上下文压缩
 │   │   ├── refund_safety.py     # 退款确认安全边界
+│   │   ├── refund_workflow.py   # 显式退款状态机与审计
 │   │   ├── tools/               # 订单、物流、商品、退款等工具
 │   │   ├── rag/                 # RAG 与向量后端
 │   │   ├── memory/              # 短期与长期记忆
 │   │   └── skills/              # 按需能力模块
 │   ├── multi_agent/             # Router 与专业子 Agent
 │   ├── evaluation/              # 数据集、沙箱、指标和评估器
-│   │   └── multi_intent_cases.json # 复合意图人工标注集
+│   │   ├── multi_intent_cases.json # 复合意图人工标注集
+│   │   └── rag_cases.json       # RAG 检索金标集
 │   ├── mcp_client/              # MCP 客户端
 │   └── scripts/                 # 索引与评估脚本
 ├── mcp_server/                  # MCP 服务端
@@ -302,6 +339,7 @@ safe-ecommerce-agent/
 
 - 项目默认使用 Mock 订单、商品和物流数据，不连接真实电商账户。
 - 退款属于敏感操作：未明确确认、缺少原因、订单状态不允许或幂等键冲突时均不会执行。
+- 退款状态和审计文件位于 `app/sessions/`；审计记录不保存完整对话，但生产环境仍应加密并配置留存期限。
 - `.env`、会话、记忆、退款账本、评估报告和向量索引均应保持在 Git 忽略列表中。
 - 若 API Key 曾公开展示，请先在服务商控制台撤销并重新生成。
 
