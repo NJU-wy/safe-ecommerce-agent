@@ -13,6 +13,7 @@ EcomGuard Agent 是一个基于 Python 和大语言模型构建的电商智能�
 - 数据边界：使用 Mock 电商数据，不连接真实支付或用户账户
 - 当前重点：可靠性、安全性和评估证据，不继续堆叠展示型功能
 - 求职材料：[项目介绍与简历表述](docs/CAREER_BRIEF.md)
+- 独立验证：[盲测报告 v1](docs/BLIND_EVALUATION.md)
 - 修改记录：[CHANGELOG.md](CHANGELOG.md)
 
 ## 项目亮点
