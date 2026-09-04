@@ -20,3 +20,10 @@ def test_existing_catalog_product_is_returned():
     assert result["success"] is True
     assert result["products"]
     assert all(not item["product_id"].startswith("MOCK-") for item in result["products"])
+
+
+def test_compact_chinese_brand_and_category_matches_catalog():
+    result = query_product("戴森吸尘器")
+
+    assert result["success"] is True
+    assert any(item["product_id"] == "HOME-DYSON-V15" for item in result["products"])

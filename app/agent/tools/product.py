@@ -6,7 +6,14 @@ from app.agent.tools.mock_data import PRODUCTS
 def _matches_token(searchable: str, token: str) -> bool:
     """中文按连续词匹配；英文/数字按完整词匹配，避免 ``VI`` 命中 Levi's。"""
     if re.search(r"[\u4e00-\u9fff]", token):
-        return len(token) >= 2 and token in searchable
+        if len(token) < 2:
+            return False
+        if token in searchable:
+            return True
+        # 用户常把品牌和类目连写（如“戴森吸尘器”）；用中文二元组允许
+        # 跨型号匹配，同时要求至少两个二元组命中，避免单字/偶然子串污染。
+        bigrams = [token[i:i + 2] for i in range(len(token) - 1)]
+        return sum(part in searchable for part in bigrams) >= 2
     if len(token) < 3:
         return False
     return bool(re.search(rf"(?<![a-z0-9]){re.escape(token)}(?![a-z0-9])", searchable))
