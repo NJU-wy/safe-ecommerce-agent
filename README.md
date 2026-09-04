@@ -238,7 +238,7 @@ Copy-Item .env.example .env
 ```env
 OPENAI_API_KEY=your_api_key
 OPENAI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
-MODEL_NAME=qwen3.7-plus
+MODEL_NAME=qwen3.7-plus-2026-05-26
 EMBEDDING_MODEL=qwen3.7-text-embedding
 EMBEDDING_BATCH_SIZE=20
 RAG_RETRIEVAL_MODE=semantic

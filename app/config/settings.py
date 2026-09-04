@@ -6,7 +6,7 @@ class Settings(BaseSettings):
 
     openai_api_key: str = ""
     openai_base_url: str = "https://api.openai.com/v1"
-    model_name: str = "gpt-4o-mini"
+    model_name: str = "qwen3.7-plus-2026-05-26"
     temperature: float = 0.7
 
     # ReAct 循环
@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     rag_query_decomposer: str = "llm"
     rag_candidate_k: int = 5
     rag_context_k: int = 3
-    rag_decomposition_model: str = "qwen3.7-plus"
+    rag_decomposition_model: str = "qwen3.7-plus-2026-05-26"
     rag_rerank_enabled: bool = False
     rag_rerank_model: str = "qwen3.7-text-rerank"
     # NumpyBackend 的 JSON 索引路径
