@@ -1,0 +1,35 @@
+{
+  "metadata": {
+    "name": "EcomGuard RAG blind evaluation v1",
+    "frozen_at": "2026-09-04",
+    "policy": "Run once after commit; no post-result edits."
+  },
+  "cases": [
+    {"id":"brag_01","query":"鞋只在客厅试穿过，但原鞋盒被快递压扁了，退货要同时满足哪些条件？","relevant_chunk_ids":["鞋服尺码与退换#01-00","鞋服尺码与退换#03-00"],"group":"multi_hop"},
+    {"id":"brag_02","query":"牛仔裤水洗过而且吊牌剪掉，尺码不合还能走七天无理由吗？","relevant_chunk_ids":["鞋服尺码与退换#01-00","鞋服尺码与退换#03-00"],"group":"multi_hop"},
+    {"id":"brag_03","query":"手机签收时没录像，后来发现边框磕碰，申请到货破损需要准备什么？","relevant_chunk_ids":["手机验机与售后#01-00","售后证据与争议处理#01-00"],"group":"multi_hop"},
+    {"id":"brag_04","query":"手机激活后出现性能故障，该按无理由退货还是先检测？","relevant_chunk_ids":["手机验机与售后#02-00","手机验机与售后#03-00"],"group":"multi_hop"},
+    {"id":"brag_05","query":"入耳式耳机拆封试戴后降噪失灵，需要提交哪些凭证并怎么处理？","relevant_chunk_ids":["耳机与配件售后#01-00","耳机与配件售后#02-00","售后证据与争议处理#03-00"],"group":"multi_hop"},
+    {"id":"brag_06","query":"耳机已经发出、保护壳还没发，我只想取消保护壳，规则是什么？","relevant_chunk_ids":["订单拆分与履约#01-00","订单拆分与履约#02-00","耳机与配件售后#06-00"],"group":"multi_hop"},
+    {"id":"brag_07","query":"吸尘器倒过灰但滤芯只拆了一只，整单退回时主机、耗材和赠品分别有什么要求？","relevant_chunk_ids":["吸尘器配送与维修#02-00","吸尘器配送与维修#04-00","吸尘器配送与维修#06-00"],"group":"multi_hop"},
+    {"id":"brag_08","query":"戴森吸力突然变弱而且续航缩短，送修前我能先做哪些排查？","relevant_chunk_ids":["吸尘器配送与维修#03-00","吸尘器配送与维修#05-00"],"group":"multi_hop"},
+    {"id":"brag_09","query":"平台通用七天规则和手机详情页的激活约定冲突时，以哪个为准？","relevant_chunk_ids":["政策适用范围与版本#02-00","政策适用范围与版本#04-00"],"group":"conflict"},
+    {"id":"brag_10","query":"规则刚更新，但我的订单是更新前下的，应按下单时还是申请售后时的版本？","relevant_chunk_ids":["政策适用范围与版本#03-00"],"group":"temporal"},
+    {"id":"brag_11","query":"物流显示本人签收但我没有收到，应该先核对什么、何时升级？","relevant_chunk_ids":["订单拆分与履约#05-00","配送说明#06-00"],"group":"multi_hop"},
+    {"id":"brag_12","query":"同一个商品误下了两单，商家能合并发货吗，已经出库的还能取消吗？","relevant_chunk_ids":["订单拆分与履约#02-00","订单拆分与履约#06-00"],"group":"multi_hop"},
+    {"id":"brag_13","query":"质检说是人为损坏但我不同意，怎样补证据和申请复核？","relevant_chunk_ids":["售后证据与争议处理#04-00"],"group":"paraphrase"},
+    {"id":"brag_14","query":"承诺的售后处理时间已经过了，催办无结果后可以怎么升级？","relevant_chunk_ids":["售后证据与争议处理#05-00","售后与维修#03-00"],"group":"multi_hop"},
+    {"id":"brag_15","query":"退款退到花呗分期后，每期账单会怎么变化？","relevant_chunk_ids":["支付与发票#03-00"],"group":"paraphrase"},
+    {"id":"brag_16","query":"开出的发票公司名称写错了，能不能改抬头？","relevant_chunk_ids":["支付与发票#02-00"],"group":"paraphrase"},
+    {"id":"brag_17","query":"我可以要求平台把账号里保存的个人资料删除吗？","relevant_chunk_ids":["账户与隐私#03-00"],"group":"paraphrase"},
+    {"id":"brag_18","query":"价格保护通常看哪个时间段，申请时要注意什么？","relevant_chunk_ids":["促销与价保#02-00"],"group":"paraphrase"},
+    {"id":"brag_none_01","query":"这双鞋下周二会不会补出43码？","relevant_chunk_ids":[],"group":"no_answer"},
+    {"id":"brag_none_02","query":"今晚八点直播间会发多少张满减券？","relevant_chunk_ids":[],"group":"no_answer"},
+    {"id":"brag_none_03","query":"同款耳机现在京东旗舰店卖多少钱？","relevant_chunk_ids":[],"group":"no_answer"},
+    {"id":"brag_none_04","query":"请告诉我派送这个包裹的快递员手机号。","relevant_chunk_ids":[],"group":"no_answer"},
+    {"id":"brag_none_05","query":"明年新版退货政策具体哪天发布？","relevant_chunk_ids":[],"group":"no_answer"},
+    {"id":"brag_none_06","query":"上海线下门店今天几点关门？","relevant_chunk_ids":[],"group":"no_answer"},
+    {"id":"brag_none_07","query":"预测一下戴森下个月促销最低价。","relevant_chunk_ids":[],"group":"no_answer"},
+    {"id":"brag_none_08","query":"用户张三本月一共消费了多少积分？","relevant_chunk_ids":[],"group":"no_answer"}
+  ]
+}
