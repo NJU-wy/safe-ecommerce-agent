@@ -18,7 +18,9 @@ from app.agent.refund_safety import (
 from app.agent.refund_workflow import RefundWorkflow
 from app.config.settings import settings
 from app.agent.response_policy import recent_user_context
-from app.agent.tool_policy import required_tool_names, select_tool_definitions
+from app.agent.tool_policy import (
+    is_tool_call_allowed, required_tool_names, select_tool_definitions,
+)
 from app.agent.tool_result_compactor import compact_tool_result
 
 
@@ -122,6 +124,21 @@ class SubAgent:
                 func_name = tc.function.name
                 called_this_turn.add(func_name)
                 func_args = json.loads(tc.function.arguments)
+                # Router 与子 Agent 都不属于可信执行边界，工具执行前再次鉴权。
+                context = recent_user_context(working)
+                if not is_tool_call_allowed(context, func_name):
+                    result_str = json.dumps({
+                        "success": False,
+                        "policy_denied": True,
+                        "error": "该工具调用不符合当前用户请求的权限与隐私策略。",
+                    }, ensure_ascii=False)
+                    self._print_observation(result_str)
+                    tool_msg = {
+                        "role": "tool", "tool_call_id": tc.id, "content": result_str,
+                    }
+                    new_messages.append(tool_msg)
+                    working.append(tool_msg)
+                    continue
                 if func_name == "apply_refund":
                     # 子 Agent 不可信：没有最新用户明确确认，就只返回安全观察，
                     # 不调用 ToolManager，因此不会产生退款副作用。

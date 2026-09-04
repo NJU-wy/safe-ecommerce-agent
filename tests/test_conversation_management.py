@@ -92,7 +92,7 @@ def test_persistence_and_recovery():
     _ok("session.json 已落盘")
 
     raw = json.loads(Path(TEST_SESSION).read_text(encoding="utf-8"))
-    if raw.get("version") != 1:
+    if raw.get("version") != 2:
         _fail(f"version 字段异常：{raw.get('version')}")
     user_count = sum(m.get("role") == "user" for m in raw["messages"])
     assistant_count = sum(m.get("role") == "assistant" for m in raw["messages"])

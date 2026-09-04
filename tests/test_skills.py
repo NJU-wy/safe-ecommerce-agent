@@ -187,6 +187,8 @@ def test_agent_integration():
         else:
             _fail("Agent 未初始化 SkillManager")
 
+        # Skill 目录只为明确复杂流程按需注入，避免每轮重复占用上下文。
+        agent.raw_messages.append({"role": "user", "content": "请按标准流程处理退货"})
         messages = agent._build_messages()
         system_content = messages[0]["content"]
         if "可用技能" in system_content and "process-return" in system_content:

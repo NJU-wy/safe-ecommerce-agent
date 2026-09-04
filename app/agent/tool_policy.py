@@ -96,6 +96,11 @@ def select_tool_definitions(user_input: str, definitions: list[dict]) -> list[di
     return [item for item in definitions if item["function"]["name"] in allowed]
 
 
+def is_tool_call_allowed(user_input: str, tool_name: str) -> bool:
+    """执行前再次校验工具权限，防止模型或上游路由绕过可见工具集。"""
+    return tool_name in allowed_tool_names(user_input)
+
+
 def should_include_skill_catalog(user_input: str) -> bool:
     """常规客服不注入 Skill 目录，只为明确的复杂流程请求提供发现信息。"""
     return bool(re.search(r"标准流程|完整流程|复杂流程|按步骤处理", user_input))

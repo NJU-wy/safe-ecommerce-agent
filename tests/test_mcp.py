@@ -38,6 +38,7 @@ EXPECTED_MCP_TOOLS = {
 EXPECTED_ALL_TOOLS = {
     "query_order", "query_product", "query_logistics", "apply_refund",
     "search_knowledge", "list_user_orders", "recall_user_memory", "load_skill",
+    "escalate_to_human",
 }
 
 

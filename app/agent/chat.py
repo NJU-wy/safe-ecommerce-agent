@@ -18,7 +18,8 @@ from app.agent.refund_safety import (
 from app.agent.refund_workflow import RefundWorkflow
 from app.agent.response_policy import build_customer_response, recent_user_context
 from app.agent.tool_policy import (
-    required_tool_names, select_tool_definitions, should_include_skill_catalog,
+    is_tool_call_allowed, required_tool_names, select_tool_definitions,
+    should_include_skill_catalog,
 )
 from app.agent.tool_result_compactor import compact_tool_result
 
@@ -189,6 +190,19 @@ class EcomAgent:
                 func_name = tc.function.name
                 called_this_turn.add(func_name)
                 func_args = json.loads(tc.function.arguments)
+                # 工具可见性只是提示；真正执行前仍按当前用户上下文做强制鉴权。
+                context = recent_user_context(self.raw_messages)
+                if not is_tool_call_allowed(context, func_name):
+                    result_str = json.dumps({
+                        "success": False,
+                        "policy_denied": True,
+                        "error": "该工具调用不符合当前用户请求的权限与隐私策略。",
+                    }, ensure_ascii=False)
+                    self._print_observation(result_str)
+                    self.raw_messages.append({
+                        "role": "tool", "tool_call_id": tc.id, "content": result_str,
+                    })
+                    continue
                 if func_name == "apply_refund":
                     # 执行层安全边界：即使模型受提示词注入影响主动调用退款，
                     # 最新用户消息没有明确确认时也绝不进入真实工具。

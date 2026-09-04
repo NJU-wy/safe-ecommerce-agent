@@ -4,7 +4,9 @@ from app.agent.response_policy import (
     recent_user_context,
     requires_human_service,
 )
-from app.agent.tool_policy import allowed_tool_names, required_tool_names
+from app.agent.tool_policy import (
+    allowed_tool_names, is_tool_call_allowed, required_tool_names,
+)
 from app.schemas.response import IntentType
 from app.agent.tool_result_compactor import compact_tool_result
 import json
@@ -31,6 +33,13 @@ def test_human_handoff_safety_rules():
     assert required_tool_names("帮我查询同事的订单 ORD-20240110-003") == {
         "escalate_to_human"
     }
+
+
+def test_privacy_request_is_denied_again_at_execution_boundary():
+    text = "朋友把订单号 ORD-20240110-003 发我了，替我看看买的什么并转人工"
+    assert is_tool_call_allowed(text, "escalate_to_human")
+    assert not is_tool_call_allowed(text, "query_order")
+    assert not is_tool_call_allowed(text, "query_logistics")
 
 
 def test_tool_visibility_is_minimal():
