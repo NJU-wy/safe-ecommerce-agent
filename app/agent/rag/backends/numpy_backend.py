@@ -89,6 +89,11 @@ class NumpyBackend(VectorBackend):
             self.load()
         return self._embedding_model
 
+    def all_chunks(self) -> list[Chunk]:
+        if not self._chunks:
+            self.load()
+        return list(self._chunks)
+
 
 def _cosine(a: list[float], b: list[float]) -> float:
     dot = 0.0

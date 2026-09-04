@@ -55,3 +55,7 @@ class VectorBackend(ABC):
     @abstractmethod
     def expected_embedding_model(self) -> str:
         """已持久化索引使用的 embedding 模型名（用于校验）。"""
+
+    @abstractmethod
+    def all_chunks(self) -> list[Chunk]:
+        """返回索引内全部文本块，供 BM25 等词法检索构建内存索引。"""

@@ -23,9 +23,13 @@ def allowed_tool_names(user_input: str) -> set[str]:
     if re.search(r"政策|规则|发票|权益|七天无理由|怎么办|多久到账|运费谁", text):
         return {"search_knowledge"}
     if intent is IntentType.RETURN_REQUEST:
-        if re.search(r"政策|规则|多久|到账|运费|流程|哪里", text):
+        has_order = bool(re.search(r"ORD-[\w-]+", text, re.IGNORECASE))
+        if re.search(r"政策|规则|多久|到账|运费|流程|哪里", text) and not has_order:
             return {"search_knowledge"}
         tools = {"query_order", "list_user_orders"}
+        # 具体订单提供事实，RAG提供类目/退换边界；模型需要同时看到两者。
+        if has_order:
+            tools.add("search_knowledge")
         if is_explicit_refund_confirmation(text.splitlines()[-1]):
             tools.add("apply_refund")
         return tools
@@ -37,7 +41,12 @@ def allowed_tool_names(user_input: str) -> set[str]:
         return {"query_order", "list_user_orders"}
     if intent is IntentType.PRODUCT_CONSULT:
         return {"query_product"}
-    if intent in {IntentType.PROMOTION, IntentType.ACCOUNT, IntentType.AFTER_SALE}:
+    if intent is IntentType.AFTER_SALE:
+        tools = {"search_knowledge"}
+        if re.search(r"ORD-[\w-]+", text, re.IGNORECASE):
+            tools.add("query_order")
+        return tools
+    if intent in {IntentType.PROMOTION, IntentType.ACCOUNT}:
         return {"search_knowledge"}
     if intent is IntentType.COMPLAINT:
         return {"query_order"} if re.search(r"ORD-[\w-]+", text, re.IGNORECASE) else set()

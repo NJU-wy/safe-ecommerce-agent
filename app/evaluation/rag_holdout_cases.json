@@ -1,0 +1,51 @@
+{
+  "name": "rag_holdout_v1",
+  "frozen": true,
+  "description": "冻结RAG测试集；不用于阈值、融合权重或提示词调参。",
+  "cases": [
+    {"id":"h_multi_01","group":"multi_hop","query":"AirPods和保护壳一单买的，耳机戴过但壳没拆，我只想退壳分别按什么规则处理","relevant_chunk_ids":["耳机与配件售后#01-00","耳机与配件售后#06-00"]},
+    {"id":"h_multi_02","group":"multi_hop","query":"戴森主机吸过灰，附带滤芯也拆了一只，整套申请无理由退货要看哪些限制","relevant_chunk_ids":["吸尘器配送与维修#02-00","吸尘器配送与维修#04-00","吸尘器配送与维修#06-00"]},
+    {"id":"h_multi_03","group":"multi_hop","query":"手机快递外箱破了我拒收，现在想处理退款，需要哪些证据和订单状态依据","relevant_chunk_ids":["手机验机与售后#01-00","售后证据与争议处理#01-00","订单拆分与履约#05-00"]},
+    {"id":"h_multi_04","group":"multi_hop","query":"鞋子室外穿过后开胶，商家说影响二次销售，这种情况要同时看哪些规则","relevant_chunk_ids":["鞋服尺码与退换#01-00","鞋服尺码与退换#04-00","售后证据与争议处理#04-00"]},
+    {"id":"h_multi_05","group":"multi_hop","query":"一个订单拆包，耳机已发出但壳还没出库，我能否只取消没发的那件","relevant_chunk_ids":["订单拆分与履约#01-00","订单拆分与履约#02-00","耳机与配件售后#06-00"]},
+    {"id":"h_multi_06","group":"multi_hop","query":"牛仔裤颜色和页面明显不一样，吊牌还在，退回运费及举证分别怎么认定","relevant_chunk_ids":["鞋服尺码与退换#05-00","鞋服尺码与退换#06-00","售后证据与争议处理#03-00"]},
+    {"id":"h_multi_07","group":"multi_hop","query":"手机激活后不断重启，平台能否因为激活拒绝质量售后，是否需要检测","relevant_chunk_ids":["手机验机与售后#02-00","手机验机与售后#03-00"]},
+    {"id":"h_multi_08","group":"multi_hop","query":"吸尘器吸力变弱，清理后仍异常，是直接换新还是先检测维修","relevant_chunk_ids":["吸尘器配送与维修#03-00","吸尘器配送与维修#05-00"]},
+    {"id":"h_multi_09","group":"multi_hop","query":"物流写已签收但我没拿到，而且箱内似乎少一件，应先排查代收还是分包","relevant_chunk_ids":["订单拆分与履约#01-00","订单拆分与履约#05-00","售后证据与争议处理#02-00"]},
+    {"id":"h_multi_10","group":"multi_hop","query":"旧政策说可以退，新版类目规则说激活手机不支持，具体订单应该怎么选规则","relevant_chunk_ids":["政策适用范围与版本#02-00","政策适用范围与版本#03-00","手机验机与售后#02-00"]},
+
+    {"id":"h_conf_01","group":"hard_confusable","query":"不是要退整套，只是充电盒坏了，平台是否必须连两只耳机一起换","relevant_chunk_ids":["耳机与配件售后#04-00"]},
+    {"id":"h_conf_02","group":"hard_confusable","query":"裤子只是试穿觉得版型不合适，没有色差也没洗，应该走质量问题还是普通退货","relevant_chunk_ids":["鞋服尺码与退换#01-00","鞋服尺码与退换#05-00"]},
+    {"id":"h_conf_03","group":"hard_confusable","query":"显示有货但订单迟迟没出库，客服能不能把库存数字当成已经锁货","relevant_chunk_ids":["订单拆分与履约#03-00","政策适用范围与版本#01-00"]},
+    {"id":"h_conf_04","group":"hard_confusable","query":"滤芯型号买错且包装没开，算耗材不能退还是可以按完好商品申请","relevant_chunk_ids":["吸尘器配送与维修#04-00"]},
+    {"id":"h_conf_05","group":"hard_confusable","query":"耳机偶尔断连一次，是否已经足够认定硬件故障并换货","relevant_chunk_ids":["耳机与配件售后#02-00"]},
+    {"id":"h_conf_06","group":"hard_confusable","query":"外包装签收时没发现问题，后来发现手机不能开机，签收是否等于放弃售后","relevant_chunk_ids":["手机验机与售后#01-00","手机验机与售后#03-00"]},
+    {"id":"h_conf_07","group":"hard_confusable","query":"催了售后以后页面还是审核中，这能否说明退款已经批准","relevant_chunk_ids":["售后证据与争议处理#05-00","政策适用范围与版本#01-00"]},
+    {"id":"h_conf_08","group":"hard_confusable","query":"多个订单被快递装在一个箱子里，退款幂等应该按箱子还是原订单处理","relevant_chunk_ids":["订单拆分与履约#06-00"]},
+
+    {"id":"h_neg_01","group":"negation","query":"我不是要查保修，只想知道手机已经激活但从未使用能不能无理由退","relevant_chunk_ids":["手机验机与售后#02-00"]},
+    {"id":"h_neg_02","group":"negation","query":"耳机不是丢了，是只有左耳没声音，不要补配方案应该先做什么","relevant_chunk_ids":["耳机与配件售后#02-00"]},
+    {"id":"h_neg_03","group":"negation","query":"鞋盒虽然破了但鞋本身开胶，我问的是质量售后会不会当然失效","relevant_chunk_ids":["鞋服尺码与退换#03-00","鞋服尺码与退换#04-00"]},
+    {"id":"h_neg_04","group":"negation","query":"不是整单都没发，只剩保护壳没出库，能否仅撤销这一行商品","relevant_chunk_ids":["订单拆分与履约#02-00"]},
+    {"id":"h_neg_05","group":"negation","query":"我不要求直接换新，只问吸尘器修不好后是否才考虑换机","relevant_chunk_ids":["吸尘器配送与维修#05-00"]},
+    {"id":"h_neg_06","group":"negation","query":"没有开箱录像不代表一定拒赔，那还可以结合哪些材料判断破损","relevant_chunk_ids":["售后证据与争议处理#01-00"]},
+
+    {"id":"h_long_01","group":"long_noise","query":"上周出差回来才拆包，期间家人说快递箱看起来正常，我登录账号又看了积分和优惠券，这些都不重要；真正的问题是物流显示本人签收但我本人没有拿到，该从哪里排查","relevant_chunk_ids":["订单拆分与履约#05-00"]},
+    {"id":"h_long_02","group":"long_noise","query":"我买手机时比较了很多颜色和内存，还参加了满减，现在也不问价格；机器已经激活，随后出现持续重启，我需要知道质量售后为什么不能只用已激活来拒绝","relevant_chunk_ids":["手机验机与售后#02-00","手机验机与售后#03-00"]},
+    {"id":"h_long_03","group":"long_noise","query":"这双鞋尺码其实合适，配送也很快，会员积分也到账了，但室外正常走了两天以后鞋底非外力开胶，现在商家让我提交材料，应该准备什么证据","relevant_chunk_ids":["鞋服尺码与退换#04-00","售后证据与争议处理#03-00"]},
+    {"id":"h_long_04","group":"long_noise","query":"订单里吸尘器和两个滤芯一起有优惠，发票已经开好，我并不咨询发票；现在想退整机但赠品吸头找不到，退款是否可能被扣减","relevant_chunk_ids":["吸尘器配送与维修#06-00"]},
+    {"id":"h_long_05","group":"long_noise","query":"耳机续航和降噪都正常，保护壳价格也不贵，只是壳的详情明确写适配我的代际却完全装不上，我应该按买错型号还是描述不符处理","relevant_chunk_ids":["耳机与配件售后#05-00"]},
+    {"id":"h_long_06","group":"long_noise","query":"客服之前说可以加急，我也提交过一次投诉，今天没有问到账时间；我只是不同意质检说裤子已经洗过，想知道能否补材料申请复核","relevant_chunk_ids":["售后证据与争议处理#04-00"]},
+
+    {"id":"h_none_01","group":"hard_no_answer","query":"Nike这双鞋下个月会不会推出43码蓝色版本","relevant_chunk_ids":[]},
+    {"id":"h_none_02","group":"hard_no_answer","query":"小米14 Ultra下一次系统更新会修复哪些相机问题","relevant_chunk_ids":[]},
+    {"id":"h_none_03","group":"hard_no_answer","query":"AirPods序列号查询后显示的具体激活日期是多少","relevant_chunk_ids":[]},
+    {"id":"h_none_04","group":"hard_no_answer","query":"戴森维修中心今天排队多少台机器","relevant_chunk_ids":[]},
+    {"id":"h_none_05","group":"hard_no_answer","query":"订单ORD-20240210-010的保护壳今晚几点一定出库","relevant_chunk_ids":[]},
+    {"id":"h_none_06","group":"hard_no_answer","query":"顺丰运单SF2000000010的快递员身份证号码是多少","relevant_chunk_ids":[]},
+    {"id":"h_none_07","group":"hard_no_answer","query":"平台明年会把七天无理由延长到多少天","relevant_chunk_ids":[]},
+    {"id":"h_none_08","group":"hard_no_answer","query":"这台手机送修后工程师最终会判定主板还是电池故障","relevant_chunk_ids":[]},
+    {"id":"h_none_09","group":"hard_no_answer","query":"牛仔裤重新补货时价格会不会降到五百元以内","relevant_chunk_ids":[]},
+    {"id":"h_none_10","group":"hard_no_answer","query":"用户小明上个月一共使用了多少积分抵扣","relevant_chunk_ids":[]}
+  ]
+}

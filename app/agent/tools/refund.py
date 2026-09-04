@@ -55,6 +55,8 @@ def apply_refund(
 
     if order["status"] == "refund_processing":
         return {"success": False, "error": "该订单已有退款申请正在处理中，请耐心等待"}
+    if order["status"] == "refunded":
+        return {"success": False, "error": "该订单已退款完成，不能重复申请"}
 
     if order["status"] == "shipped":
         return {
@@ -88,7 +90,7 @@ def apply_refund(
                     f"退款原因：{reason}。退款将在 1-3 个工作日内原路退回。"
                 ),
             }
-        else:
+        elif order["status"] == "delivered":
             result = {
                 "success": True,
                 "refund_status": "submitted",
@@ -98,6 +100,8 @@ def apply_refund(
                     f"预计 1-3 个工作日内审核完成，届时会通知您退货地址。"
                 ),
             }
+        else:
+            return {"success": False, "error": f"订单状态 {order['status']} 暂不支持退款"}
         ledger[idempotency_key] = {"request": payload, "result": result}
         _save_ledger(ledger_path, ledger)
         return result

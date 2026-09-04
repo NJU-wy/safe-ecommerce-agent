@@ -151,3 +151,20 @@ class ChromaBackend(VectorBackend):
             except FileNotFoundError:
                 return ""
         return self._embedding_model
+
+    def all_chunks(self) -> list[Chunk]:
+        if self._collection is None:
+            self.load()
+        result = self._collection.get(include=["documents", "metadatas"])
+        chunks: list[Chunk] = []
+        for cid, text, meta in zip(
+            result.get("ids", []), result.get("documents", []), result.get("metadatas", [])
+        ):
+            meta = meta or {}
+            chunks.append(Chunk(
+                chunk_id=meta.get("chunk_id", cid),
+                doc=meta.get("doc", ""),
+                section=meta.get("section", ""),
+                text=text or "",
+            ))
+        return chunks

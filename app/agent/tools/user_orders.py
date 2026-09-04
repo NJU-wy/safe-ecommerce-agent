@@ -5,6 +5,7 @@ STATUS_LABELS = {
     "shipped": "已发货",
     "delivered": "已签收",
     "refund_processing": "退款中",
+    "refunded": "退款完成",
 }
 
 

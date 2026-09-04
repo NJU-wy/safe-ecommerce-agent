@@ -78,6 +78,77 @@ ORDERS = {
         "carrier": None,
         "estimated_delivery": None,
     },
+    "ORD-20240201-006": {
+        "order_id": "ORD-20240201-006", "user": "小明", "status": "delivered",
+        "items": [{"name": "Nike Air Max 270 运动鞋", "sku": "SHOE-270-BK-42", "quantity": 1, "price": 899.00,
+                   "fulfillment_status": "delivered", "condition": "indoor_tried", "package_complete": True}],
+        "total": 899.00, "created_at": "2024-02-01 10:00:00", "shipped_at": "2024-02-02 09:00:00",
+        "tracking_number": "SF2000000006", "carrier": "顺丰速运", "estimated_delivery": "2024-02-04",
+        "delivered_at": "2024-02-04 15:20:00", "return_window_days": 7,
+    },
+    "ORD-20240203-007": {
+        "order_id": "ORD-20240203-007", "user": "小丽", "status": "delivered",
+        "items": [{"name": "Levi's 501 经典牛仔裤", "sku": "CLOTH-LEVI-501-30", "quantity": 1, "price": 699.00,
+                   "fulfillment_status": "delivered", "condition": "washed", "tags_attached": False}],
+        "total": 699.00, "created_at": "2024-02-03 11:00:00", "shipped_at": "2024-02-04 08:30:00",
+        "tracking_number": "YT2000000007", "carrier": "圆通速递", "estimated_delivery": "2024-02-06",
+        "delivered_at": "2024-02-06 12:10:00", "return_window_days": 7,
+    },
+    "ORD-20240205-008": {
+        "order_id": "ORD-20240205-008", "user": "大壮", "status": "delivered",
+        "items": [{"name": "小米14 Ultra 手机", "sku": "PHONE-MI14U-BK", "quantity": 1, "price": 5999.00,
+                   "fulfillment_status": "delivered", "activation_status": "activated", "condition": "like_new"}],
+        "total": 5999.00, "created_at": "2024-02-05 13:00:00", "shipped_at": "2024-02-06 09:00:00",
+        "tracking_number": "JD2000000008", "carrier": "京东物流", "estimated_delivery": "2024-02-07",
+        "delivered_at": "2024-02-07 16:00:00", "return_window_days": 7,
+    },
+    "ORD-20240208-009": {
+        "order_id": "ORD-20240208-009", "user": "阿杰", "status": "shipped",
+        "items": [{"name": "小米14 Ultra 手机", "sku": "PHONE-MI14U-BK", "quantity": 1, "price": 5999.00,
+                   "fulfillment_status": "refused", "condition": "shipping_damage"}],
+        "total": 5999.00, "created_at": "2024-02-08 09:00:00", "shipped_at": "2024-02-08 17:00:00",
+        "tracking_number": "JD2000000009", "carrier": "京东物流", "estimated_delivery": "2024-02-10",
+    },
+    "ORD-20240210-010": {
+        "order_id": "ORD-20240210-010", "user": "小红", "status": "shipped",
+        "items": [
+            {"name": "Apple AirPods Pro 2", "sku": "ELEC-APP-002", "quantity": 1, "price": 1799.00,
+             "fulfillment_status": "shipped", "package_id": "PKG-010-A"},
+            {"name": "AirPods 保护壳（透明）", "sku": "ACC-AP-CASE-01", "quantity": 1, "price": 29.90,
+             "fulfillment_status": "pending", "package_id": None},
+        ],
+        "total": 1828.90, "created_at": "2024-02-10 10:30:00", "shipped_at": "2024-02-11 08:00:00",
+        "tracking_number": "SF2000000010", "tracking_numbers": ["SF2000000010"], "carrier": "顺丰速运",
+        "estimated_delivery": "2024-02-13", "split_shipment": True,
+    },
+    "ORD-20240212-011": {
+        "order_id": "ORD-20240212-011", "user": "小红", "status": "delivered",
+        "items": [{"name": "Apple AirPods Pro 2", "sku": "ELEC-APP-002", "quantity": 1, "price": 1799.00,
+                   "fulfillment_status": "delivered", "seal_status": "opened", "condition": "in_ear_used"}],
+        "total": 1799.00, "created_at": "2024-02-12 14:00:00", "shipped_at": "2024-02-13 08:00:00",
+        "tracking_number": "SF2000000011", "carrier": "顺丰速运", "estimated_delivery": "2024-02-15",
+        "delivered_at": "2024-02-15 18:20:00", "return_window_days": 7,
+    },
+    "ORD-20240215-012": {
+        "order_id": "ORD-20240215-012", "user": "阿杰", "status": "delivered",
+        "items": [
+            {"name": "戴森 V15 Detect 吸尘器", "sku": "HOME-DYSON-V15", "quantity": 1, "price": 4299.00,
+             "fulfillment_status": "delivered", "condition": "used", "dust_bin_status": "contains_dust"},
+            {"name": "戴森 V15 替换滤芯", "sku": "HOME-DYSON-FLTR", "quantity": 2, "price": 199.00,
+             "fulfillment_status": "delivered", "condition": "one_opened"},
+        ],
+        "total": 4697.00, "created_at": "2024-02-15 19:00:00", "shipped_at": "2024-02-16 10:00:00",
+        "tracking_number": "JD2000000012", "carrier": "京东物流", "estimated_delivery": "2024-02-18",
+        "delivered_at": "2024-02-18 13:40:00", "return_window_days": 7,
+    },
+    "ORD-20240218-013": {
+        "order_id": "ORD-20240218-013", "user": "小明", "status": "refunded",
+        "items": [{"name": "AirPods 保护壳（透明）", "sku": "ACC-AP-CASE-01", "quantity": 1, "price": 29.90,
+                   "fulfillment_status": "cancelled", "after_sale_status": "refund_completed"}],
+        "total": 29.90, "created_at": "2024-02-18 09:00:00", "shipped_at": None,
+        "tracking_number": None, "carrier": None, "estimated_delivery": None,
+        "refund_reason": "重复购买", "refund_status": "退款完成", "refunded_at": "2024-02-19 10:00:00",
+    },
 }
 
 PRODUCTS = {
@@ -135,6 +206,11 @@ PRODUCTS = {
         "description": "TPU 透明软壳，防摔防刮，精准开孔",
         "specs": {"材质": "TPU", "适配": "AirPods Pro 2"},
     },
+    "HOME-DYSON-FLTR": {
+        "product_id": "HOME-DYSON-FLTR", "name": "戴森 V15 替换滤芯", "category": "家电配件",
+        "price": 199.00, "stock": 67, "description": "适配戴森 V15 系列的可清洗替换滤芯",
+        "specs": {"适配": "戴森 V15", "数量": "1个", "类型": "耗材"},
+    },
 }
 
 LOGISTICS = {
@@ -171,4 +247,11 @@ LOGISTICS = {
             {"time": "2024-01-21 15:00", "location": "上海普陀区", "description": "已签收"},
         ],
     },
+    "SF2000000006": {"tracking_number": "SF2000000006", "carrier": "顺丰速运", "status": "delivered", "events": [{"time": "2024-02-04 15:20", "location": "上海", "description": "已签收"}]},
+    "YT2000000007": {"tracking_number": "YT2000000007", "carrier": "圆通速递", "status": "delivered", "events": [{"time": "2024-02-06 12:10", "location": "杭州", "description": "已签收"}]},
+    "JD2000000008": {"tracking_number": "JD2000000008", "carrier": "京东物流", "status": "delivered", "events": [{"time": "2024-02-07 16:00", "location": "北京", "description": "本人签收"}]},
+    "JD2000000009": {"tracking_number": "JD2000000009", "carrier": "京东物流", "status": "refused", "events": [{"time": "2024-02-10 10:20", "location": "北京", "description": "外包装破损，收件人拒收，原路退回"}]},
+    "SF2000000010": {"tracking_number": "SF2000000010", "carrier": "顺丰速运", "status": "in_transit", "package_id": "PKG-010-A", "item_skus": ["ELEC-APP-002"], "events": [{"time": "2024-02-11 08:00", "location": "深圳", "description": "耳机包裹已揽收"}]},
+    "SF2000000011": {"tracking_number": "SF2000000011", "carrier": "顺丰速运", "status": "delivered", "events": [{"time": "2024-02-15 18:20", "location": "广州", "description": "已签收"}]},
+    "JD2000000012": {"tracking_number": "JD2000000012", "carrier": "京东物流", "status": "delivered", "events": [{"time": "2024-02-18 13:40", "location": "南京", "description": "已签收"}]},
 }

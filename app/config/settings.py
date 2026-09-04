@@ -20,9 +20,20 @@ class Settings(BaseSettings):
 
     # RAG 配置
     embedding_model: str = "text-embedding-3-small"
+    # qwen3.7-text-embedding 的 OpenAI 兼容接口单次最多接收 20 条文本。
+    embedding_batch_size: int = 20
     kb_dir: str = "app/agent/rag/knowledge"
     # 向量后端：numpy（手写余弦，教学透明，零依赖，默认）/ chroma（向量数据库，生产代表，需 pip install chromadb）
     rag_backend: str = "numpy"
+    # 百炼中文语义向量在金标集上实测最佳；BM25 与 hybrid 保留用于对照。
+    rag_retrieval_mode: str = "semantic"
+    rag_query_decomposition: bool = False
+    rag_query_decomposer: str = "llm"
+    rag_candidate_k: int = 5
+    rag_context_k: int = 3
+    rag_decomposition_model: str = "qwen3.7-plus"
+    rag_rerank_enabled: bool = False
+    rag_rerank_model: str = "qwen3.7-text-rerank"
     # NumpyBackend 的 JSON 索引路径
     kb_index_path: str = "app/sessions/kb_index.json"
     # ChromaBackend 的持久化目录与 collection 名

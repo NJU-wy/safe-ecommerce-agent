@@ -18,6 +18,8 @@ from app.config.settings import settings
 from app.agent.rag.backends import create_backend
 from app.agent.rag.embedder import Embedder
 from app.agent.rag.retriever import KnowledgeRetriever
+from app.agent.rag.answerability import classify_answerability
+from app.agent.rag.query_decomposer import needs_extended_context
 
 _retriever: Optional[KnowledgeRetriever] = None
 
@@ -45,9 +47,12 @@ def _get_retriever() -> KnowledgeRetriever:
             api_key=settings.openai_api_key,
             base_url=settings.openai_base_url,
             model=settings.embedding_model,
+            batch_size=settings.embedding_batch_size,
         )
         backend = _create_backend_from_settings()
-        _retriever = KnowledgeRetriever(embedder=embedder, backend=backend)
+        _retriever = KnowledgeRetriever(
+            embedder=embedder, backend=backend, mode=settings.rag_retrieval_mode
+        )
         _retriever.load()
     return _retriever
 
@@ -76,6 +81,17 @@ def search_knowledge(query: str, top_k: int = 3) -> dict:
     if not query or not query.strip():
         return {"success": False, "error": "query 不能为空", "query": query, "results": []}
 
+    decision = classify_answerability(query)
+    if not decision.answerable:
+        return {
+            "success": True,
+            "answerable": False,
+            "answerability_reason": decision.reason,
+            "answerability_confidence": decision.confidence,
+            "query": query,
+            "results": [],
+        }
+
     try:
         retriever = _get_retriever()
     except FileNotFoundError as e:
@@ -96,12 +112,22 @@ def search_knowledge(query: str, top_k: int = 3) -> dict:
         }
 
     top_k = max(1, min(int(top_k or 3), 5))
-    hits = retriever.search(query, top_k=top_k)
+    selected_k = 5 if needs_extended_context(query) else min(top_k, settings.rag_context_k)
+    hits = retriever.search(
+        query,
+        top_k=selected_k,
+        decompose=settings.rag_query_decomposition,
+        candidate_k=settings.rag_candidate_k,
+    )
 
     return {
         "success": True,
+        "answerable": True,
         "backend": settings.rag_backend,
+        "retrieval_mode": settings.rag_retrieval_mode,
         "query": query,
+        "subqueries": retriever.last_subqueries,
+        "context_k": selected_k,
         "results": [
             {
                 "doc": h.chunk.doc,

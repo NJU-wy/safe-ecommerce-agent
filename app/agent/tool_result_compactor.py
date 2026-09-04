@@ -24,10 +24,15 @@ def compact_tool_result(name: str, result_json: str) -> str:
         compact = _pick(order, (
             "order_id", "status", "total", "created_at", "shipped_at",
             "carrier", "tracking_number", "estimated_delivery",
-            "delivered_at", "refund_status", "refund_reason",
+            "delivered_at", "refund_status", "refund_reason", "refunded_at",
+            "split_shipment", "tracking_numbers", "return_window_days",
         ))
         compact["items"] = [
-            _pick(item, ("name", "quantity", "price"))
+            _pick(item, (
+                "name", "sku", "quantity", "price", "fulfillment_status",
+                "package_id", "condition", "activation_status", "seal_status",
+                "package_complete", "tags_attached", "after_sale_status",
+            ))
             for item in order.get("items", [])
         ]
         data["order"] = compact
@@ -47,12 +52,14 @@ def compact_tool_result(name: str, result_json: str) -> str:
         ]
 
     elif name == "search_knowledge":
+        # 检索工具已经根据问题复杂度选择 Top-3 / Top-5；这里不能再次
+        # 固定截断为 3，否则多条件问题召回到的补充证据无法进入模型上下文。
         data["results"] = [
             {
                 **_pick(hit, ("doc", "section", "score")),
                 "text": str(hit.get("text", ""))[:360],
             }
-            for hit in data.get("results", [])[:3]
+            for hit in data.get("results", [])[:5]
         ]
 
     elif name == "load_skill" and "instructions" in data:

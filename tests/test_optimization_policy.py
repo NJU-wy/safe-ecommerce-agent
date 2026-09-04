@@ -43,6 +43,15 @@ def test_tool_visibility_is_minimal():
     assert "apply_refund" in allowed_tool_names("订单信息无误，我确认退款")
 
 
+def test_order_specific_after_sale_combines_facts_and_policy():
+    assert {"query_order", "search_knowledge"}.issubset(
+        allowed_tool_names("订单 ORD-20240205-008 的手机激活后还能退货吗")
+    )
+    assert allowed_tool_names("订单 ORD-20240205-008 的手机怎么申请保修") == {
+        "query_order", "search_knowledge"
+    }
+
+
 def test_response_metadata_needs_no_second_llm_call():
     result = build_customer_response("我要转人工投诉", "好的，正在为您处理。")
     assert result.intent is IntentType.COMPLAINT
@@ -77,7 +86,7 @@ def test_tool_result_compaction_keeps_business_fields():
     assert compact["order"]["order_id"] == "ORD-1"
     assert compact["order"]["items"][0]["name"] == "运动鞋"
     assert "user" not in compact["order"]
-    assert "sku" not in compact["order"]["items"][0]
+    assert compact["order"]["items"][0]["sku"] == "SKU-1"
 
 
 def test_chat_history_does_not_duplicate_structured_reply(tmp_path, monkeypatch):

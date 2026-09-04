@@ -20,10 +20,12 @@ class Embedder:
         api_key: str,
         base_url: str,
         model: str = "text-embedding-3-small",
-        batch_size: int = 64,
+        batch_size: int = 20,
     ):
         self._client = OpenAI(api_key=api_key, base_url=base_url)
         self._model = model
+        if batch_size < 1:
+            raise ValueError("batch_size 必须大于 0")
         self._batch_size = batch_size
 
     @property

@@ -86,6 +86,7 @@ def main():
         api_key=settings.openai_api_key,
         base_url=settings.openai_base_url,
         model=settings.embedding_model,
+        batch_size=settings.embedding_batch_size,
     )
     vectors = embedder.encode([c.text for c in chunks])
     dim = len(vectors[0]) if vectors else 0
@@ -99,7 +100,8 @@ def main():
     )
     print(f"   已写入 {backend.size()} 条向量")
 
-    print("\n🎉 索引构建完成。")
+    # 避免 Windows GBK 终端因无法编码 emoji 而在索引成功后返回失败码。
+    print("\n索引构建完成。")
 
 
 if __name__ == "__main__":
