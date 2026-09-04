@@ -17,7 +17,9 @@ from app.agent.refund_safety import (
 )
 from app.agent.refund_workflow import RefundWorkflow
 from app.agent.response_policy import build_customer_response, recent_user_context
-from app.agent.tool_policy import select_tool_definitions, should_include_skill_catalog
+from app.agent.tool_policy import (
+    required_tool_names, select_tool_definitions, should_include_skill_catalog,
+)
 from app.agent.tool_result_compactor import compact_tool_result
 
 
@@ -133,11 +135,19 @@ class EcomAgent:
 
     def _react_loop(self) -> str:
         """ReAct 循环：调用 LLM → 执行工具 → 观察结果 → 重复，直到模型给出最终回答。"""
+        called_this_turn: set[str] = set()
         for step in range(self.max_react_steps):
             messages = self._build_messages()
+            context = recent_user_context(self.raw_messages)
             visible_tools = select_tool_definitions(
-                recent_user_context(self.raw_messages), self.tool_manager.tool_definitions
+                context, self.tool_manager.tool_definitions
             )
+            missing_required = required_tool_names(context) - called_this_turn
+            if missing_required:
+                visible_tools = [
+                    tool for tool in visible_tools
+                    if tool["function"]["name"] in missing_required
+                ]
 
             response = self.client.chat.completions.create(
                 model=self.model,
@@ -148,7 +158,7 @@ class EcomAgent:
                 # 空工具集时省略 tools 参数，兼容不接受 tools=[] 的供应商。
                 **({"tools": visible_tools} if visible_tools else {}),
                 # 数据类请求首步必须落到真实工具；后续步骤恢复 auto，避免死循环。
-                **({"tool_choice": "required"} if visible_tools and step == 0 else {}),
+                **({"tool_choice": "required"} if visible_tools and (step == 0 or missing_required) else {}),
             )
             choice = response.choices[0]
             assistant_msg = choice.message
@@ -177,6 +187,7 @@ class EcomAgent:
 
             for tc in assistant_msg.tool_calls:
                 func_name = tc.function.name
+                called_this_turn.add(func_name)
                 func_args = json.loads(tc.function.arguments)
                 if func_name == "apply_refund":
                     # 执行层安全边界：即使模型受提示词注入影响主动调用退款，

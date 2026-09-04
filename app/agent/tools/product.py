@@ -1,4 +1,15 @@
+import re
+
 from app.agent.tools.mock_data import PRODUCTS
+
+
+def _matches_token(searchable: str, token: str) -> bool:
+    """中文按连续词匹配；英文/数字按完整词匹配，避免 ``VI`` 命中 Levi's。"""
+    if re.search(r"[\u4e00-\u9fff]", token):
+        return len(token) >= 2 and token in searchable
+    if len(token) < 3:
+        return False
+    return bool(re.search(rf"(?<![a-z0-9]){re.escape(token)}(?![a-z0-9])", searchable))
 
 
 def _match_score(product: dict, keywords: list[str]) -> int:
@@ -9,7 +20,7 @@ def _match_score(product: dict, keywords: list[str]) -> int:
         product.get("description", ""),
         " ".join(str(v) for v in product.get("specs", {}).values()),
     ]).lower()
-    return sum(1 for kw in keywords if kw in searchable)
+    return sum(1 for kw in keywords if _matches_token(searchable, kw))
 
 
 def query_product(keyword: str) -> dict:

@@ -111,7 +111,11 @@ class Evaluator:
                 case.forbidden_tools, called
             )
             res.token_pass = metrics.token_cost_pass(trace.total_tokens, case.max_tokens)
-            res.route_match = metrics.route_match(case.expected_route, trace.route)
+            # expected_route 仅适用于多Agent；单Agent没有Router，不应被统一记为失败。
+            res.route_match = (
+                metrics.route_match(case.expected_route, trace.route)
+                if self.sandbox.mode == "multi" else None
+            )
 
             # ---------- 结果指标（代码规则）----------
             res.intent_match = metrics.intent_match(case.expected_intent, actual_intent)

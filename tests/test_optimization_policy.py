@@ -4,7 +4,7 @@ from app.agent.response_policy import (
     recent_user_context,
     requires_human_service,
 )
-from app.agent.tool_policy import allowed_tool_names
+from app.agent.tool_policy import allowed_tool_names, required_tool_names
 from app.schemas.response import IntentType
 from app.agent.tool_result_compactor import compact_tool_result
 import json
@@ -25,7 +25,12 @@ def test_human_handoff_safety_rules():
     assert requires_human_service("这个快递稍微有点慢") is False
     assert requires_human_service("帮我查询同事的订单") is True
     assert classify_intent("帮我查询同事的订单") is IntentType.ACCOUNT
-    assert allowed_tool_names("帮我查询同事的订单") == set()
+    assert allowed_tool_names("帮我查询同事的订单 ORD-20240110-003") == {
+        "escalate_to_human"
+    }
+    assert required_tool_names("帮我查询同事的订单 ORD-20240110-003") == {
+        "escalate_to_human"
+    }
 
 
 def test_tool_visibility_is_minimal():
@@ -50,6 +55,21 @@ def test_order_specific_after_sale_combines_facts_and_policy():
     assert allowed_tool_names("订单 ORD-20240205-008 的手机怎么申请保修") == {
         "query_order", "search_knowledge"
     }
+    assert required_tool_names("订单 ORD-20240205-008 的手机激活后还能退货吗") == {
+        "query_order", "search_knowledge"
+    }
+
+
+def test_complaint_requires_real_escalation_event():
+    tools = allowed_tool_names("ORD-20240115-001 配送太慢，投诉并转人工")
+    assert tools == {"query_logistics", "escalate_to_human"}
+    assert required_tool_names("ORD-20240115-001 配送太慢，投诉并转人工") == tools
+
+
+def test_new_intent_boundaries():
+    assert classify_intent("晚上好，介绍一下你能做什么") is IntentType.GREETING
+    assert classify_intent("电子发票抬头怎么修改") is IntentType.ORDER_QUERY
+    assert classify_intent("账号被盗，还有非本人订单，转人工") is IntentType.ACCOUNT
 
 
 def test_response_metadata_needs_no_second_llm_call():

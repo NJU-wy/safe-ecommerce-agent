@@ -11,6 +11,7 @@ from app.agent.tools.knowledge import search_knowledge
 from app.agent.tools.user_orders import list_user_orders
 from app.agent.tools.memory_tool import recall_user_memory
 from app.agent.tools.skill_tool import load_skill
+from app.agent.tools.escalation import escalate_to_human
 
 _TOOL_MAP: dict[str, Callable] = {
     "query_order": query_order,
@@ -21,9 +22,28 @@ _TOOL_MAP: dict[str, Callable] = {
     "list_user_orders": list_user_orders,
     "recall_user_memory": recall_user_memory,
     "load_skill": load_skill,
+    "escalate_to_human": escalate_to_human,
 }
 
 TOOL_DEFINITIONS: list[dict] = [
+    {
+        "type": "function",
+        "function": {
+            "name": "escalate_to_human",
+            "description": "创建人工客服转接事件。用户明确要求人工、投诉或账号安全风险时必须调用",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "reason": {"type": "string", "description": "转人工原因"},
+                    "priority": {
+                        "type": "string", "enum": ["normal", "high", "urgent"],
+                        "description": "普通、较高或紧急优先级"
+                    }
+                },
+                "required": ["reason"]
+            }
+        }
+    },
     {
         "type": "function",
         "function": {

@@ -8,6 +8,13 @@ def test_unknown_product_is_not_fabricated():
     assert "未找到" in result["error"]
 
 
+def test_short_latin_substring_does_not_match_unrelated_product():
+    result = query_product("索尼 A7R VI 相机")
+
+    assert result["success"] is False
+    assert result["products"] == []
+
+
 def test_existing_catalog_product_is_returned():
     result = query_product("运动鞋")
     assert result["success"] is True

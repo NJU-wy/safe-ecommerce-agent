@@ -17,6 +17,17 @@ def test_policy_scope_question_remains_answerable():
     assert decision.answerable is True
 
 
+def test_blind_future_and_realtime_phrasings_are_rejected():
+    queries = [
+        "这双鞋下周二会不会补出43码？",
+        "今晚八点直播间会发多少张满减券？",
+        "预测一下戴森下个月促销最低价。",
+        "用户张三本月一共消费了多少积分？",
+    ]
+
+    assert all(not classify_answerability(query).answerable for query in queries)
+
+
 def test_compactor_preserves_five_selected_rag_contexts():
     result = {
         "success": True,

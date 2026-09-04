@@ -18,7 +18,7 @@ from app.agent.refund_safety import (
 from app.agent.refund_workflow import RefundWorkflow
 from app.config.settings import settings
 from app.agent.response_policy import recent_user_context
-from app.agent.tool_policy import select_tool_definitions
+from app.agent.tool_policy import required_tool_names, select_tool_definitions
 from app.agent.tool_result_compactor import compact_tool_result
 
 
@@ -26,20 +26,20 @@ AGENT_CONFIGS = {
     "presale": {
         "name": "小夕-售前",
         "prompt": PRESALE_PROMPT,
-        "tools": {"query_product", "search_knowledge", "list_user_orders", "load_skill"},
+        "tools": {"query_product", "search_knowledge", "list_user_orders", "load_skill", "escalate_to_human"},
     },
     "postsale": {
         "name": "小夕-售后",
         "prompt": POSTSALE_PROMPT,
         "tools": {
             "query_order", "query_logistics", "apply_refund",
-            "list_user_orders", "search_knowledge", "load_skill",
+            "list_user_orders", "search_knowledge", "load_skill", "escalate_to_human",
         },
     },
     "complaint": {
         "name": "小夕-投诉",
         "prompt": COMPLAINT_PROMPT,
-        "tools": {"query_order", "search_knowledge", "load_skill"},
+        "tools": {"query_order", "query_logistics", "search_knowledge", "load_skill", "escalate_to_human"},
     },
 }
 
@@ -70,11 +70,19 @@ class SubAgent:
         """执行 ReAct 循环，返回 (最终文本, 新增消息列表)。"""
         new_messages: list[dict] = []
         working = list(messages)
+        called_this_turn: set[str] = set()
 
         for step in range(max_steps):
+            context = recent_user_context(working)
             visible_tools = select_tool_definitions(
-                recent_user_context(working), self.tool_manager.tool_definitions
+                context, self.tool_manager.tool_definitions
             )
+            missing_required = required_tool_names(context) - called_this_turn
+            if missing_required:
+                visible_tools = [
+                    tool for tool in visible_tools
+                    if tool["function"]["name"] in missing_required
+                ]
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=working,
@@ -82,7 +90,7 @@ class SubAgent:
                 max_tokens=settings.max_response_tokens,
                 **completion_kwargs(),
                 **({"tools": visible_tools} if visible_tools else {}),
-                **({"tool_choice": "required"} if visible_tools and step == 0 else {}),
+                **({"tool_choice": "required"} if visible_tools and (step == 0 or missing_required) else {}),
             )
             assistant_msg = response.choices[0].message
 
@@ -112,6 +120,7 @@ class SubAgent:
 
             for tc in assistant_msg.tool_calls:
                 func_name = tc.function.name
+                called_this_turn.add(func_name)
                 func_args = json.loads(tc.function.arguments)
                 if func_name == "apply_refund":
                     # 子 Agent 不可信：没有最新用户明确确认，就只返回安全观察，

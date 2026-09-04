@@ -44,6 +44,8 @@ def requires_human_service(user_input: str) -> bool:
 def classify_intent(user_input: str) -> IntentType:
     """按互斥优先级识别意图，优先处理投诉和退款等高价值业务。"""
     text = user_input.strip()
+    if re.search(r"账号被盗|账户被盗|非本人订单|异常订单", text):
+        return IntentType.ACCOUNT
     if any(re.search(pattern, text, re.IGNORECASE) for pattern in _COMPLAINT_PATTERNS):
         return IntentType.COMPLAINT
     if re.search(r"退款|退货|换货|退掉|不想要|拒收|七天无理由|apply_refund", text, re.IGNORECASE):
@@ -54,13 +56,13 @@ def classify_intent(user_input: str) -> IntentType:
         return IntentType.PROMOTION
     if re.search(r"维修|保修|售后", text):
         return IntentType.AFTER_SALE
-    if re.search(r"订单|ORD-|物流|快递|发货|配送|签收|运单|下单.*送到|预计.*到", text, re.IGNORECASE):
+    if re.search(r"订单|ORD-|物流|快递|发货|配送|签收|运单|发票|下单.*送到|预计.*到", text, re.IGNORECASE):
         return IntentType.ORDER_QUERY
     if re.search(r"商品|库存|价格|多少钱|规格|材质|续航|推荐|耳机|手机|鞋|吸尘器|牛仔裤|AirPods|Nike|小米|戴森|Levi|保护壳|相机", text, re.IGNORECASE):
         return IntentType.PRODUCT_CONSULT
     if re.fullmatch(r"[\s。！!,.，…]*", text):
         return IntentType.OTHER
-    if re.search(r"你好|您好|嗨|谢谢|再见|👋", text):
+    if re.search(r"你好|您好|嗨|谢谢|再见|早上好|下午好|晚上好|👋", text):
         return IntentType.GREETING
     return IntentType.OTHER
 
@@ -74,9 +76,9 @@ def classify_intents(user_input: str) -> tuple[IntentType, list[IntentType]]:
         (IntentType.ACCOUNT, (r"账号|账户|密码|登录|绑定手机|手机号|隐私|被盗|同事.*订单|朋友.*订单|别人.*订单|他人.*订单",)),
         (IntentType.PROMOTION, (r"优惠券|活动|促销|折扣|满减|包邮|会员权益",)),
         (IntentType.AFTER_SALE, (r"维修|保修|售后",)),
-        (IntentType.ORDER_QUERY, (r"订单|ORD-|物流|快递|发货|配送|签收|运单|下单.*送到|预计.*到",)),
+        (IntentType.ORDER_QUERY, (r"订单|ORD-|物流|快递|发货|配送|签收|运单|发票|下单.*送到|预计.*到",)),
         (IntentType.PRODUCT_CONSULT, (r"商品|库存|价格|多少钱|规格|材质|续航|推荐|耳机|手机|鞋|吸尘器|牛仔裤|AirPods|Nike|小米|戴森|Levi|保护壳|相机",)),
-        (IntentType.GREETING, (r"你好|您好|嗨|谢谢|再见|👋",)),
+        (IntentType.GREETING, (r"你好|您好|嗨|谢谢|再见|早上好|下午好|晚上好|👋",)),
     )
     matched = [
         intent for intent, patterns in rules
