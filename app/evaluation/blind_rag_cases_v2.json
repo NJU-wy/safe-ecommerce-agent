@@ -1,0 +1,25 @@
+{
+  "metadata":{"name":"EcomGuard RAG blind evaluation v2","frozen_at":"2026-09-04","based_on_fix":"e1d44d3","policy":"Never edit after first run."},
+  "cases":[
+    {"id":"v2r_01","query":"运动鞋室内试了几分钟，鞋底干净，但原包装盒裂开，申请无理由要看哪几条？","relevant_chunk_ids":["鞋服尺码与退换#01-00","鞋服尺码与退换#03-00"],"group":"multi_hop"},
+    {"id":"v2r_02","query":"手机已经完成激活却频繁重启，售后应先判断激活限制还是性能故障？","relevant_chunk_ids":["手机验机与售后#02-00","手机验机与售后#03-00"],"group":"multi_hop"},
+    {"id":"v2r_03","query":"耳机一边没声音，自己排查无效后，凭证和单只更换分别怎么规定？","relevant_chunk_ids":["耳机与配件售后#02-00","耳机与配件售后#03-00","耳机与配件售后#04-00"],"group":"multi_hop"},
+    {"id":"v2r_04","query":"吸尘器少了一个刷头且外箱有撞痕，签收证据和缺件材料要怎么留？","relevant_chunk_ids":["吸尘器配送与维修#01-00","售后证据与争议处理#01-00","售后证据与争议处理#02-00"],"group":"multi_hop"},
+    {"id":"v2r_05","query":"一张订单两个包裹，一个显示签收一个没揽收，分别该按什么流程排查？","relevant_chunk_ids":["订单拆分与履约#01-00","配送说明#06-00"],"group":"multi_hop"},
+    {"id":"v2r_06","query":"商品页写了特殊售后约定，而通用规则说可以退，冲突时怎么判断？","relevant_chunk_ids":["政策适用范围与版本#02-00","政策适用范围与版本#04-00"],"group":"conflict"},
+    {"id":"v2r_07","query":"申请售后后一直没有质检结果，超过承诺时间可以走哪些催办和升级步骤？","relevant_chunk_ids":["售后证据与争议处理#05-00","售后与维修#03-00"],"group":"multi_hop"},
+    {"id":"v2r_08","query":"花呗分期买的东西退款后，已经出的账单与没出的账单怎么抵扣？","relevant_chunk_ids":["支付与发票#03-00"],"group":"paraphrase"},
+    {"id":"v2r_09","query":"平台保存的收货地址和历史资料，我能申请导出或清除吗？","relevant_chunk_ids":["账户与隐私#03-00"],"group":"paraphrase"},
+    {"id":"v2r_10","query":"裤子颜色和页面照片不同，什么情况下算显示差异，什么情况下能申诉？","relevant_chunk_ids":["鞋服尺码与退换#05-00"],"group":"hard_confusable"},
+    {"id":"v2r_11","query":"戴森滤芯洗完没完全晾干就装回去，会影响使用和售后吗？","relevant_chunk_ids":["吸尘器配送与维修#04-00"],"group":"paraphrase"},
+    {"id":"v2r_12","query":"优惠券和满减能否同时使用，退掉部分商品后优惠怎么重新计算？","relevant_chunk_ids":["促销与价保#01-00"],"group":"paraphrase"},
+    {"id":"v2rn_01","query":"这款手机国庆节当天会降到多少钱？","relevant_chunk_ids":[],"group":"no_answer"},
+    {"id":"v2rn_02","query":"明天下午直播会临时加发几轮优惠券？","relevant_chunk_ids":[],"group":"no_answer"},
+    {"id":"v2rn_03","query":"淘宝官方店此刻的耳机到手价是多少？","relevant_chunk_ids":[],"group":"no_answer"},
+    {"id":"v2rn_04","query":"把负责我这个片区的配送员私人电话给我。","relevant_chunk_ids":[],"group":"no_answer"},
+    {"id":"v2rn_05","query":"北京体验店周日有没有现货可以试用？","relevant_chunk_ids":[],"group":"no_answer"},
+    {"id":"v2rn_06","query":"预计下一版会员制度什么时候上线？","relevant_chunk_ids":[],"group":"no_answer"},
+    {"id":"v2rn_07","query":"会员李四今年累计使用了几万积分？","relevant_chunk_ids":[],"group":"no_answer"},
+    {"id":"v2rn_08","query":"结合天气预测这个包裹明早能不能到。","relevant_chunk_ids":[],"group":"no_answer"}
+  ]
+}
