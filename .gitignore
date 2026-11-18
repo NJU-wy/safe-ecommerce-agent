@@ -42,3 +42,6 @@ coverage.xml
 # 本地数据库与临时文件
 *.sqlite3
 *.tmp
+
+# 本地学习总结（不提交到仓库）
+docs/PROJECT_WORKFLOW_GUIDE.md
