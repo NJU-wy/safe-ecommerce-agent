@@ -21,6 +21,7 @@
 """
 
 import argparse
+import hashlib
 import json
 import random
 import sys
@@ -35,6 +36,7 @@ from app.config.settings import settings  # noqa: E402
 from app.evaluation.dataset import load_dataset  # noqa: E402
 from app.evaluation.evaluator import Evaluator  # noqa: E402
 from app.evaluation.sandbox import Sandbox  # noqa: E402
+from app.agent.strategies.policy import current_policy, policy_scope  # noqa: E402
 
 
 def _fmt(value) -> str:
@@ -194,7 +196,8 @@ def main():
 
     print(f"\n[2/3] 在沙箱中重跑测试集（{args.mode} 模式）...")
     client = OpenAI(api_key=settings.openai_api_key, base_url=settings.openai_base_url)
-    sandbox = Sandbox(mode=args.mode)
+    policy_version, policy_rules = current_policy(args.mode)
+    sandbox = Sandbox(mode=args.mode, policy_override=policy_rules)
     evaluator = Evaluator(
         sandbox=sandbox,
         client=client,
@@ -203,6 +206,18 @@ def main():
         pass_threshold=settings.eval_pass_threshold,
     )
     report = evaluator.run_all(cases)
+    report["protocol"] = {
+        "producer": "app.scripts.run_eval",
+        "mode": args.mode,
+        "model": settings.model_name,
+        "temperature": settings.temperature,
+        "dimension_threshold": settings.eval_pass_threshold,
+        "dataset_sha256": hashlib.sha256(dataset_path.read_bytes()).hexdigest(),
+        "judge": args.judge,
+        "policy_scope": policy_scope(args.mode),
+        "policy_version": policy_version,
+        "policy_rules": list(policy_rules),
+    }
     if selection_info:
         report["selection"] = selection_info
 

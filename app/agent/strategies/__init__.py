@@ -4,6 +4,7 @@
 - Plan-and-Execute：先规划再执行，适合复杂多步骤请求
 - Reflexion：自我评估与迭代改进
 - REWOO：预规划 + 批量执行，高效处理并行任务
+- Policy Evolution：独立评估验证后才可启用的客服规则
 
 每种策略实现统一接口，可由 EcomAgent 按需切换。
 """

@@ -22,6 +22,7 @@ from app.agent.tool_policy import (
     should_include_skill_catalog,
 )
 from app.agent.tool_result_compactor import compact_tool_result
+from app.agent.strategies.policy import policy_prompt
 
 
 class EcomAgent:
@@ -72,6 +73,7 @@ class EcomAgent:
         self.refund_workflow = RefundWorkflow(
             settings.memory_user_id, settings.refund_audit_path
         )
+        self.policy_override: tuple[str, ...] | None = None
 
         loaded = load_session(self.session_path)
         if loaded:
@@ -307,7 +309,7 @@ class EcomAgent:
         return CustomerServiceResponse.model_validate_json(raw)
 
     def _build_messages(self) -> list[dict]:
-        system_content = SYSTEM_PROMPT
+        system_content = SYSTEM_PROMPT + policy_prompt("single", self.policy_override)
         context = recent_user_context(self.raw_messages)
         if (
             self.skill_manager

@@ -252,3 +252,36 @@ class Evaluator:
             "trace": r.trace,
             "error": r.error,
         }
+
+
+def run_comparison(cases: list[EvalCase], baseline: Evaluator, candidate: Evaluator) -> dict:
+    """在相同留出题上交替运行基线和候选策略，报告逐题改善与退步。"""
+    if baseline.use_judge or candidate.use_judge:
+        raise ValueError("策略配对验证必须关闭额外模型裁判")
+    if baseline.pass_threshold != candidate.pass_threshold:
+        raise ValueError("配对验证的通过阈值必须一致")
+    if not cases or len({case.id for case in cases}) != len(cases):
+        raise ValueError("留出集不能为空且题号必须唯一")
+
+    results: dict[str, list[EvalResult]] = {"baseline": [], "candidate": []}
+    sides = [("baseline", baseline), ("candidate", candidate)]
+    for index, case in enumerate(cases):
+        order = sides if index % 2 == 0 else list(reversed(sides))
+        for side, evaluator in order:
+            results[side].append(evaluator.run_case(case))
+
+    report: dict = {}
+    for side, evaluator in sides:
+        report[side] = evaluator._aggregate(results[side])
+        report[side]["summary"]["errors"] = sum(r.error is not None for r in results[side])
+    report["paired"] = {
+        "improved": [a.case_id for a, b in zip(results["baseline"], results["candidate"])
+                     if not a.passed and b.passed],
+        "regressed": [a.case_id for a, b in zip(results["baseline"], results["candidate"])
+                      if a.passed and not b.passed],
+        "delta_pp": 100 * (
+            report["candidate"]["summary"]["pass_rate"]
+            - report["baseline"]["summary"]["pass_rate"]
+        ),
+    }
+    return report

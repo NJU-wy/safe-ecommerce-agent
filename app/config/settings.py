@@ -57,6 +57,8 @@ class Settings(BaseSettings):
     eval_dataset_path: str = "app/evaluation/cases.json"
     eval_use_judge: bool = True  # 是否启用 LLM-as-judge（质量/幻觉/过程合理性）
     eval_pass_threshold: float = 0.6  # 单维度通过阈值（judge 归一化到 0-1 后比较）
+    # 评测验证通过的策略版本；默认没有启用任何动态规则。
+    policy_db_path: str = "app/sessions/policies.sqlite3"
 
     # 敏感操作审计与幂等账本
     refund_ledger_path: str = "app/sessions/refund_ledger.json"

@@ -28,8 +28,10 @@ from app.evaluation.trace import LLMCallRecord, RunTrace, ToolObservation
 class Sandbox:
     """Agent 评估沙箱：构建隔离环境、插桩采集、跑用例产出 RunTrace。"""
 
-    def __init__(self, mode: str = "single", tmp_root: str | None = None):
+    def __init__(self, mode: str = "single", tmp_root: str | None = None, *,
+                 policy_override: tuple[str, ...] | None = None):
         self.mode = mode  # "single" / "multi"
+        self.policy_override = policy_override
         self.tmp_root = Path(tmp_root) if tmp_root else Path(tempfile.mkdtemp(prefix="eval_sandbox_"))
         self.tmp_root.mkdir(parents=True, exist_ok=True)
 
@@ -59,6 +61,8 @@ class Sandbox:
         patches: list[tuple] = []  # (obj, attr, original) 供还原
         try:
             agent = self._build_agent(session_path)
+            if self.policy_override is not None:
+                agent.policy_override = self.policy_override
             self._instrument(agent, trace, patches)
 
             result = None

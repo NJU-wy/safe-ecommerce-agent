@@ -19,6 +19,7 @@ from app.config.model_options import completion_kwargs
 from app.agent.response_policy import build_customer_response, recent_user_context
 from app.agent.tool_policy import should_include_skill_catalog
 from app.agent.refund_workflow import RefundWorkflow
+from app.agent.strategies.policy import policy_prompt
 
 
 class MultiAgentOrchestrator:
@@ -82,6 +83,7 @@ class MultiAgentOrchestrator:
         self.refund_workflow = RefundWorkflow(
             settings.memory_user_id, settings.refund_audit_path
         )
+        self.policy_override: tuple[str, ...] | None = None
 
         loaded = load_session(self.session_path)
         if loaded:
@@ -156,7 +158,7 @@ class MultiAgentOrchestrator:
 
     def _build_messages(self, agent: SubAgent) -> list[dict]:
         """用子 Agent 的 system prompt 构建消息列表。"""
-        system_content = agent.system_prompt
+        system_content = agent.system_prompt + policy_prompt("multi", self.policy_override)
         context = recent_user_context(self.raw_messages)
         if (
             self.skill_manager

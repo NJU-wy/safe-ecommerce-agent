@@ -29,6 +29,7 @@ EcomGuard Agent 是一个基于 Python 和大语言模型构建的电商智能�
 - 显式退款状态机：跨轮状态、订单绑定、授权拦截和 JSONL 审计轨迹。
 - 多意图输出：提供主意图和次要意图；Multi-Agent 仍按一个主责路由执行，避免重复调用。
 - 评估闭环：100 条单意图回归集、6 条复合意图集及失败集＋成功抽样 Judge。
+- 评测驱动策略演进：失败报告只能从固定规则库提出候选；必须在独立留出集上做到“有改善、零退步、零异常”，再由维护者显式采用或回滚。
 
 ## 系统架构
 
@@ -199,6 +200,28 @@ Reranker共调用40次、处理34,501个计费Token。由于它主要改善首�
 - MCP Streamable HTTP
 - NumPy / Chroma 向量检索
 - Pytest
+
+### 策略演进（上游同步）
+
+2026-11 项目加入评测驱动的策略演进能力，同时保留已有的退款状态机、执行层鉴权、RAG 与冻结盲测资产。
+
+```powershell
+# 1. 先生成带运行协议的失败报告
+python -m app.scripts.run_eval --mode single --no-judge --output app/sessions/eval.json
+
+# 2. 查看由失败证据映射出的候选规则
+python -m app.scripts.evolve propose --mode single --report app/sessions/eval.json
+
+# 3. 在独立留出集上配对验证（会调用当前配置的模型）
+python -m app.scripts.evolve validate --mode single --report app/sessions/eval.json --output app/sessions/policy_validation.json
+
+# 4. 只有 eligible=true 才会生成版本；仍需人工显式采用
+python -m app.scripts.evolve adopt --mode single <version>
+python -m app.scripts.evolve status --mode single
+python -m app.scripts.evolve rollback --mode single <current-version>
+```
+
+策略版本按运行模式、模型、接口、温度和关键配置隔离，保存在本地 SQLite 中且不会提交到 Git。运行时只读取已采用版本，候选规则不能直接污染线上提示词。
 
 ## 快速开始
 

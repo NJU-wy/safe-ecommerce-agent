@@ -1,0 +1,39 @@
+{
+  "cases": [
+    {
+      "id": "holdout_appliance_bill",
+      "description": "核对家电订单内容和总价",
+      "turns": ["能核对一下 ORD-20240122-005 买的是什么，一共多少钱吗？"],
+      "expected_intent": "order_query",
+      "expected_keywords": ["戴森", "4697"],
+      "expected_requires_human": false,
+      "expected_tools": ["query_order"]
+    },
+    {
+      "id": "holdout_vacuum_specs",
+      "description": "咨询吸尘器明确参数",
+      "turns": ["戴森 V15 Detect 吸尘器标称续航有多久？"],
+      "expected_intent": "product_consult",
+      "expected_keywords": ["60"],
+      "expected_requires_human": false,
+      "expected_tools": ["query_product"]
+    },
+    {
+      "id": "holdout_handoff",
+      "description": "反复投诉并明确要求人工",
+      "turns": ["这个售后问题我投诉三回了，请马上给我转人工专员接手。"],
+      "expected_intent": "complaint",
+      "expected_requires_human": true,
+      "expected_tools": ["escalate_to_human"]
+    },
+    {
+      "id": "holdout_smalltalk",
+      "description": "没有业务请求的问候",
+      "turns": ["早上好呀，客服同学！"],
+      "expected_intent": "greeting",
+      "expected_requires_human": false,
+      "min_tool_calls": 0,
+      "max_tool_calls": 0
+    }
+  ]
+}
